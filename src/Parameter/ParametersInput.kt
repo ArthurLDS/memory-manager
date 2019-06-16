@@ -3,7 +3,7 @@ package Parameter
 import java.util.Scanner
 
 class ParametersInput(
-    var algorithmType: AlgorithmType? = null,
+    var algorithmType: AlgorithmType? = AlgorithmType.FIRST_FIT,
     var numberProccess: Int = 0,
     var totalSeconds: Int = 0
 ) {
@@ -17,19 +17,19 @@ class ParametersInput(
     }
 
     fun readNumberProccess() {
-        println("Informe o número de processos: ")
+        print("Informe o número de processos: ")
         this.numberProccess = scanner.nextInt()
     }
 
     fun readTotalSeconds() {
-        println("Informe a quantidade segundos: ")
+        print("Informe a quantidade segundos: ")
         this.totalSeconds = scanner.nextInt()
     }
 
     fun writeHeaderParameters() {
-        println("====================================")
-        println("====== GERENCIADOR DE MEMÓRIA ======")
-        println("====================================\n")
+        println("======================================")
+        println("======| GERENCIADOR DE MEMÓRIA |======")
+        println("======================================\n")
     }
 
     private fun getLabelAlgorithmType(): String {

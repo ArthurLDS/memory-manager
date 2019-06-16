@@ -6,39 +6,44 @@ import Parameter.AlgorithmType
 class MemoryManagerService(
     val algorithmType: AlgorithmType? = null,
     val numberProccess: Int = 0,
-    val totalSeconds: Int = 0
+    val totalSeconds: Int = 0,
+    val memorySize: Int = 0
 ) {
+    var memory: Memory? = null
 
-    val memory: Memory? = null
-
-    fun createMemory(size: Int, numPartitions: Int) {
-        val partitions = createPatitions(size, numPartitions)
-        val memory = Memory(size, partitions)
+    init {
+        val slots: List<Slot> = createSlots(memorySize)
+        memory = Memory(memorySize, slots)
+        runProcessing()
     }
 
-    fun createPatitions(sizeMemory: Int, numPartitions: Int): List<Partition> {
-        val sizesPartitions = getSizesPartitions(sizeMemory, numPartitions)
-        val partitions = mutableListOf<Partition>()
-
-        (0 until numPartitions).forEach { partitions.add(Partition(sizesPartitions[it], mutableListOf())) }
-
-        return partitions
+    private fun runProcessing() {
+        (0..5).forEach{
+            Thread.sleep((totalSeconds * 10000).toLong())
+            printMemory()
+        }
     }
 
-    fun createProcesses(quantity: Int) {
-
+    private fun createSlots(size: Int): List<Slot> {
+        var slots: MutableList<Slot> = mutableListOf()
+        (0..size).forEach { slots.add(Slot()) }
+        return slots
     }
 
-    fun getSizesPartitions(sizeMemory: Int, numPartitions: Int): List<Int> {
-        val totalPartition = sizeMemory / numPartitions
-        val halfTotal = totalPartition / 2
+    private fun printMemory() {
+        val quantitySlotsLine = 200
+        val slots = memory?.slots
+        println("[_____________ MEMORY PRINTING _____________]")
+        for (i in 0 until slots?.size!!) {
+            val currentSlot = slots[i]
+            if (i!=0 && i % quantitySlotsLine == 0) {
+                println(currentSlot.simbol)
+            } else {
+                print(currentSlot.simbol)
+            }
 
-        var sizes: MutableList<Int> = mutableListOf()
-        (1 until numPartitions).forEach { sizes.add((halfTotal..totalPartition).random()) }
-        val restMemory = sizeMemory - sizes.sum()
-        sizes.add(restMemory)
-        sizes.shuffle()
-        return sizes
+        }
+        println("[______________ END PRINTING _______________]")
     }
 
 

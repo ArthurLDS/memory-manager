@@ -11,6 +11,5 @@ fun main(args: Array<String>) {
 //    parameters.readNumberProccess()
 //    parameters.readTotalSeconds()
 
-    val memoryManager = MemoryManagerService(parameters.algorithmType, parameters.numberProccess, parameters.totalSeconds)
-    memoryManager.createMemory(5000, 4)
+    val memoryManager = MemoryManagerService(parameters.algorithmType, parameters.numberProccess, parameters.totalSeconds, 5000)
 }
