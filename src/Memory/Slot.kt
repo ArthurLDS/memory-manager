@@ -1,6 +1,6 @@
 package Memory
 
 class Slot(
-    val simbol: String = "-",
-    val process: Process? = null
+    var simbol: String = ".",
+    var process: Process? = null
 )

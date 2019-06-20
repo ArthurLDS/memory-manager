@@ -7,9 +7,9 @@ fun main(args: Array<String>) {
     val parameters = ParametersInput()
     parameters.writeHeaderParameters()
 
-//    parameters.readAlgorithmType()
-//    parameters.readNumberProccess()
-//    parameters.readTotalSeconds()
+    parameters.readAlgorithmType()
+    parameters.readNumberProccess()
+    parameters.readTotalSeconds()
 
     val memoryManager = MemoryManagerService(parameters.algorithmType, parameters.numberProccess, parameters.totalSeconds, 5000)
 }

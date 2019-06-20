@@ -11,22 +11,44 @@ class MemoryManagerService(
 ) {
     var memory: Memory? = null
 
+
     init {
-        val slots: List<Slot> = createSlots(memorySize)
+        var slots: List<Slot> = createSlots(memorySize)
         memory = Memory(memorySize, slots)
+
+//        slots[0].process = Process()
+//        slots[1].process = Process()
+//        slots[2].process = Process()
+//        slots[3].process = Process()
+//
+//        slots[4996].process = Process()
+//        slots[4997].process = Process()
+//        slots[4998].process = Process()
+//        slots[4999].process = Process()
+
         runProcessing()
+
     }
 
     private fun runProcessing() {
-        (0..5).forEach{
-            Thread.sleep((totalSeconds * 10000).toLong())
+        (0..10).forEach{
+            Thread.sleep((totalSeconds * 1000).toLong())
+            createProcesses()
             printMemory()
         }
     }
 
+    private fun createProcesses(){
+        val processRunning : List<Process?> = memory?.slots?.map { it.process } ?: listOf()
+        val process = Process(processRunning.size + 1, ProcessService.getRandonProcessSize(), 1, ProcessService.getRandonSimbol(memory?.slots ?: listOf()))
+        memory?.slots = ProcessService.runFirstFit(process, memory?.slots ?: listOf())
+
+    }
+
+
     private fun createSlots(size: Int): List<Slot> {
         var slots: MutableList<Slot> = mutableListOf()
-        (0..size).forEach { slots.add(Slot()) }
+        (0 until size).forEach { slots.add(Slot()) }
         return slots
     }
 
@@ -43,7 +65,7 @@ class MemoryManagerService(
             }
 
         }
-        println("[______________ END PRINTING _______________]")
+        println("\n[______________ END PRINTING _______________]")
     }
 
 
