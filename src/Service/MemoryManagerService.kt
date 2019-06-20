@@ -2,6 +2,7 @@ package Service
 
 import Memory.*
 import Parameter.AlgorithmType
+import java.util.*
 
 class MemoryManagerService(
     val algorithmType: AlgorithmType? = null,
@@ -9,8 +10,11 @@ class MemoryManagerService(
     val totalSeconds: Int = 0,
     val memorySize: Int = 0
 ) {
-    var memory: Memory? = null
 
+    var memory: Memory? = null
+    var processessCreated: Int = 0
+    var cicles: Int = 0
+    private val scanner = Scanner(System.`in`)
 
     init {
         var slots: List<Slot> = createSlots(memorySize)
@@ -31,17 +35,42 @@ class MemoryManagerService(
     }
 
     private fun runProcessing() {
-        (0..10).forEach{
+        var resp = ""
+        do {
             Thread.sleep((totalSeconds * 1000).toLong())
-            createProcesses()
+            manageProcesses()
             printMemory()
-        }
+        } while (resp != "c")
     }
 
-    private fun createProcesses(){
-        val processRunning : List<Process?> = memory?.slots?.map { it.process } ?: listOf()
-        val process = Process(processRunning.size + 1, ProcessService.getRandonProcessSize(), 1, ProcessService.getRandonSimbol(memory?.slots ?: listOf()))
-        memory?.slots = ProcessService.runFirstFit(process, memory?.slots ?: listOf())
+    private fun manageProcesses() {
+        memory?.slots?.map { it.process }?.distinct()?.map {
+            if (it != null) {
+                if (it.cicles > it.currentCicles)
+                    it.currentCicles++
+                else
+                    it.clear()
+            }
+        }
+        fixSimbols()
+        createProcesses()
+    }
+
+    private fun fixSimbols() {
+        memory?.slots?.map { it.simbol = it.process?.simbol ?: "." }
+    }
+
+    private fun createProcesses() {
+        if (processessCreated < numberProccess) {
+            processessCreated++
+            val process = Process(
+                pid = processessCreated + 1,
+                size = ProcessService.getRandonProcessSize(),
+                cicles = ProcessService.getRandonTimeExecution(),
+                simbol = ProcessService.getRandonSimbol(memory?.slots ?: listOf())
+            )
+            memory?.slots = ProcessService.runFirstFit(process, memory?.slots ?: listOf())
+        }
 
     }
 
@@ -58,14 +87,18 @@ class MemoryManagerService(
         println("[_____________ MEMORY PRINTING _____________]")
         for (i in 0 until slots?.size!!) {
             val currentSlot = slots[i]
-            if (i!=0 && i % quantitySlotsLine == 0) {
+            if (i != 0 && i % quantitySlotsLine == 0)
                 println(currentSlot.simbol)
-            } else {
+            else
                 print(currentSlot.simbol)
-            }
 
         }
         println("\n[______________ END PRINTING _______________]")
+        println("")
+        memory?.slots?.map { it.process }?.distinct()?.forEach {
+            if(it !=null && it.pid > 0) println("PID ${it.pid} (${it.simbol}) - CICLES: ${it.cicles} - CICLES DONE: ${it.currentCicles} - SIZE: ${it.size} Bytes")
+        }
+        println("")
     }
 
 

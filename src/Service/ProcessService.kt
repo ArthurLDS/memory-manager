@@ -23,7 +23,7 @@ object ProcessService {
                     break
                 }
             }
-            if (currentSlot.process == null) {
+            if (currentSlot.process == null || currentSlot.process!!.pid == 0) {
                 sizeFreeArea++
                 indexEndFreeArea = i
             } else {
@@ -32,9 +32,12 @@ object ProcessService {
         }
 
         val indexFirstFreeArea = indexEndFreeArea - (sizeFreeArea - 1)
-        println("FIRST SPACE FREE: $indexFirstFreeArea")
-        println("LAST SPACE FREE : $indexEndFreeArea")
-        println("SIZE SPACE FREE : $sizeFreeArea")
+//        println("FIRST SPACE FREE: $indexFirstFreeArea")
+//        println("LAST SPACE FREE : $indexEndFreeArea")
+//        println("SIZE SPACE FREE : $sizeFreeArea")
+//        println("PROCCESS SIMBOL: ${process.simbol}")
+//        println("CICLES:          ${process.cicles}")
+//        println("CURRENT CICLES:  ${process.currentCicles}")
 
         if (sizeFreeArea >= sizeProcess) {
             (indexFirstFreeArea..indexFirstFreeArea + sizeProcess).forEach {
@@ -45,9 +48,18 @@ object ProcessService {
         return slots
     }
 
+
+    fun getRandonTimeExecution(): Int{
+        return (1..10).random()
+    }
+
     fun getRandonSimbol(slots: List<Slot>): String {
-        val simbols = charArrayOf('!','#','&','*','%','$','@','-','+','?','^','`','´',':',',','<','>','\'','/','A','B','C','D','E')
-        return simbols[(0 until simbols.size).random()].toString()
+        val simbols = charArrayOf('!','#','&','*','%','$','@','-','+','?','^','`','´',':',',','<','>','\'','/','0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z')
+        var randomSimbol: String
+        do {
+            randomSimbol = simbols[(0 until simbols.size).random()].toString()
+        } while(slots.any{it.simbol == randomSimbol})
+        return randomSimbol
     }
 
     fun getRandonProcessSize(): Int{
