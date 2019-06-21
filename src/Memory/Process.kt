@@ -5,7 +5,7 @@ data class Process(
     var size: Int = 0,
     var cicles: Int = 0,
     var currentCicles: Int = 0,
-    var simbol: String
+    var simbol: String = ""
 ) {
     fun clear(){
         this.pid = 0

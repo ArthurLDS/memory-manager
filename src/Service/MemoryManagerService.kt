@@ -19,17 +19,6 @@ class MemoryManagerService(
     init {
         var slots: List<Slot> = createSlots(memorySize)
         memory = Memory(memorySize, slots)
-
-//        slots[0].process = Process()
-//        slots[1].process = Process()
-//        slots[2].process = Process()
-//        slots[3].process = Process()
-//
-//        slots[4996].process = Process()
-//        slots[4997].process = Process()
-//        slots[4998].process = Process()
-//        slots[4999].process = Process()
-
         runProcessing()
 
     }
@@ -69,7 +58,12 @@ class MemoryManagerService(
                 cicles = ProcessService.getRandonTimeExecution(),
                 simbol = ProcessService.getRandonSimbol(memory?.slots ?: listOf())
             )
-            memory?.slots = ProcessService.runFirstFit(process, memory?.slots ?: listOf())
+            memory?.slots = when(algorithmType) {
+                AlgorithmType.FIRST_FIT -> ProcessService.runFirstFit(process, memory?.slots ?: listOf())
+                AlgorithmType.BEST_FIT -> ProcessService.runBestFit(process, memory?.slots ?: listOf())
+                AlgorithmType.WORST_FIT -> ProcessService.runWorstFit(process, memory?.slots ?: listOf())
+                else -> listOf()
+            }
         }
 
     }
@@ -93,12 +87,12 @@ class MemoryManagerService(
                 print(currentSlot.simbol)
 
         }
-        println("\n[______________ END PRINTING _______________]")
         println("")
         memory?.slots?.map { it.process }?.distinct()?.forEach {
-            if(it !=null && it.pid > 0) println("PID ${it.pid} (${it.simbol}) - CICLES: ${it.cicles} - CICLES DONE: ${it.currentCicles} - SIZE: ${it.size} Bytes")
+            if (it != null && it.pid > 0) println("PID ${it.pid} (${it.simbol}) - CICLES: ${it.cicles} - CICLES DONE: ${it.currentCicles} - SIZE: ${it.size} Bytes")
         }
         println("")
+        println("\n[______________ END PRINTING _______________]")
     }
 
 
