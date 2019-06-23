@@ -6,6 +6,29 @@ import Memory.Slot
 
 object ProcessService {
 
+    fun runBestFit(process: Process, slots: List<Slot>): List<Slot> {
+        var bestArea = getFreeAraes(process, slots).filter { it.indexEnd + process.size < slots.size }.minBy { it.size }
+            ?: FreeArea()
+        return alocateProcess(process, slots, bestArea)
+    }
+
+    fun runWorstFit(process: Process, slots: List<Slot>): List<Slot> {
+        var bestArea = getFreeAraes(process, slots).maxBy { it.size } ?: FreeArea()
+        return alocateProcess(process, slots, bestArea)
+    }
+
+    fun runFirstFit(process: Process, slots: List<Slot>): List<Slot> {
+        var bestArea = getFreeAraes(process, slots).first()
+        return alocateProcess(process, slots, bestArea)
+    }
+
+    fun runCircularFit(process: Process, slots: List<Slot>): List<Slot> {
+        var lastSlotAlocate = slots.indexOfLast { it.process?.pid ?: 0 > 0}
+        var foundArea = getFreeAraes(process, slots).first { it.indexStart > lastSlotAlocate}
+        var bestArea = if(foundArea.size >= process.size) foundArea else getFreeAraes(process, slots).first()
+        return alocateProcess(process, slots, bestArea)
+    }
+
     fun findFirstFreeArea(process: Process, slots: List<Slot>, startSearch: Int = 0): FreeArea {
         val sizeProcess = process.size
         var sizeFreeArea = 0
@@ -30,50 +53,23 @@ object ProcessService {
                 foundEnd = true
             }
         }
-        return FreeArea(sizeFreeArea,  indexEndFreeArea, indexEndFreeArea - (sizeFreeArea - 1))
+        return FreeArea(sizeFreeArea, indexEndFreeArea, indexEndFreeArea - (sizeFreeArea - 1))
     }
 
-    fun runBestFit(process: Process, slots: List<Slot>): List<Slot> {
+
+    private fun getFreeAraes(process: Process, slots: List<Slot>): List<FreeArea> {
         var listFreeArea = mutableListOf<FreeArea>()
         var lastFreeArea = FreeArea()
         do {
             lastFreeArea = findFirstFreeArea(process, slots, lastFreeArea.indexEnd)
             listFreeArea.add(lastFreeArea)
-        } while(lastFreeArea.indexEnd < slots.size - 1)
-
-        var bestArea = listFreeArea.minBy { it.size } ?: FreeArea()
-        return alocateProcess(process, slots, bestArea)
+        } while (lastFreeArea.indexEnd < slots.size - 1)
+        return listFreeArea
     }
 
-    fun runWorstFit(process: Process, slots: List<Slot>): List<Slot> {
-        var listFreeArea = mutableListOf<FreeArea>()
-        var lastFreeArea = FreeArea()
-        do {
-            lastFreeArea = findFirstFreeArea(process, slots, lastFreeArea.indexEnd)
-            listFreeArea.add(lastFreeArea)
-        } while(lastFreeArea.indexEnd < slots.size - 1)
-
-        var bestArea = listFreeArea.maxBy { it.size } ?: FreeArea()
-        return alocateProcess(process, slots, bestArea)
-    }
-
-    fun runFirstFit(process: Process, slots: List<Slot>): List<Slot> {
-        var listFreeArea = mutableListOf<FreeArea>()
-        var lastFreeArea = FreeArea()
-        do {
-            lastFreeArea = findFirstFreeArea(process, slots, lastFreeArea.indexEnd)
-            listFreeArea.add(lastFreeArea)
-        } while(lastFreeArea.indexEnd < slots.size - 1)
-
-        var bestArea = listFreeArea[0]
-        return alocateProcess(process, slots, bestArea)
-    }
-
-    fun alocateProcess(process: Process, slots: List<Slot>, bestArea : FreeArea):  List<Slot>{
-        println("${bestArea.indexStart} - ${bestArea.indexStart + process.size}")
-
+    private fun alocateProcess(process: Process, slots: List<Slot>, bestArea: FreeArea): List<Slot> {
         val limit = bestArea.indexStart + process.size
-        if(limit < slots.size){
+        if (limit < slots.size) {
             (bestArea.indexStart..limit).forEach {
                 slots[it].simbol = process.simbol
                 slots[it].process = process
@@ -81,7 +77,6 @@ object ProcessService {
         }
         return slots
     }
-
 
     fun getRandonTimeExecution(): Int {
         return (1..10).random()

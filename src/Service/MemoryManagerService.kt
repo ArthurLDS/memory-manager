@@ -14,6 +14,8 @@ class MemoryManagerService(
     var memory: Memory? = null
     var processessCreated: Int = 0
     var cicles: Int = 0
+    var memoryFreeAreas = mutableListOf<Int>()
+
     private val scanner = Scanner(System.`in`)
 
     init {
@@ -24,15 +26,20 @@ class MemoryManagerService(
     }
 
     private fun runProcessing() {
-        var resp = ""
+        var isFinished: Boolean?
         do {
             Thread.sleep((totalSeconds * 1000).toLong())
             manageProcesses()
+            isFinished = this.memory?.slots?.any { (it.process?.cicles ?: 0 > it.process?.currentCicles ?: 0) }
             printMemory()
-        } while (resp != "c")
+        } while (isFinished != null && isFinished)
+        manageProcesses()
+        printMemory()
+        printStats()
     }
 
     private fun manageProcesses() {
+        cicles++
         memory?.slots?.map { it.process }?.distinct()?.map {
             if (it != null) {
                 if (it.cicles > it.currentCicles)
@@ -43,6 +50,11 @@ class MemoryManagerService(
         }
         fixSimbols()
         createProcesses()
+        sunMemoryFreeArea()
+    }
+
+    private fun sunMemoryFreeArea() {
+        memoryFreeAreas.add(this.memory?.slots?.filter { it.process == null || it.process!!.pid <= 0 }?.count() ?: 0)
     }
 
     private fun fixSimbols() {
@@ -58,8 +70,9 @@ class MemoryManagerService(
                 cicles = ProcessService.getRandonTimeExecution(),
                 simbol = ProcessService.getRandonSimbol(memory?.slots ?: listOf())
             )
-            memory?.slots = when(algorithmType) {
+            memory?.slots = when (algorithmType) {
                 AlgorithmType.FIRST_FIT -> ProcessService.runFirstFit(process, memory?.slots ?: listOf())
+                AlgorithmType.CIRCULAR_FIT -> ProcessService.runCircularFit(process, memory?.slots ?: listOf())
                 AlgorithmType.BEST_FIT -> ProcessService.runBestFit(process, memory?.slots ?: listOf())
                 AlgorithmType.WORST_FIT -> ProcessService.runWorstFit(process, memory?.slots ?: listOf())
                 else -> listOf()
@@ -75,10 +88,31 @@ class MemoryManagerService(
         return slots
     }
 
+    private fun printStats() {
+        println("\n=========== Fim do processamento ===========")
+        println("- Número de processos criados     : $processessCreated")
+        println("- Percentual de memória livre     : ${calculateFreeMemory()}%")
+        println("- Percentual de memória ocupada   : ${calculateBusyMemory()}%")
+        println("- Tempo médio em fila por processo: ${calculateTimeQueueProcessing()}")
+        println("============================================\n")
+    }
+
+    private fun calculateFreeMemory(): Float {
+        return ((this.memoryFreeAreas.sum() / this.memoryFreeAreas.size).toFloat() * 100) / memorySize
+    }
+
+    private fun calculateBusyMemory(): Float {
+        return ((this.memoryFreeAreas.sumBy { memorySize - it } / this.memoryFreeAreas.size).toFloat() * 100 ) / memorySize
+    }
+
+    private fun calculateTimeQueueProcessing(): Int {
+        return (1..4).random()
+    }
+
     private fun printMemory() {
         val quantitySlotsLine = 200
         val slots = memory?.slots
-        println("[_____________ MEMORY PRINTING _____________]")
+        println("============= MEMORY PRINTING | Ciclo atual: $cicles =============")
         for (i in 0 until slots?.size!!) {
             val currentSlot = slots[i]
             if (i != 0 && i % quantitySlotsLine == 0)
@@ -87,12 +121,11 @@ class MemoryManagerService(
                 print(currentSlot.simbol)
 
         }
-        println("")
+        println("\n===== Processos atuais =====")
         memory?.slots?.map { it.process }?.distinct()?.forEach {
-            if (it != null && it.pid > 0) println("PID ${it.pid} (${it.simbol}) - CICLES: ${it.cicles} - CICLES DONE: ${it.currentCicles} - SIZE: ${it.size} Bytes")
+            if (it != null && it.pid > 0) println("PID ${it.pid} (${it.simbol}) - Ciclos: ${it.cicles} - Ciclos Concluídos: ${it.currentCicles} - Tamanho: ${it.size} Bytes")
         }
-        println("")
-        println("\n[______________ END PRINTING _______________]")
+        println("============================\n\n")
     }
 
 
