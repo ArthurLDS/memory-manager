@@ -70,13 +70,13 @@ class MemoryManagerService(
         val timeProcess = processService.getRandonTimeExecution()
         this.totalExecution += timeProcess
         if (processessCreated < numberProccess) {
-            processessCreated++
             val process = Process(
                 pid = processessCreated + 1,
                 size = processService.getRandonProcessSize(),
                 cicles = timeProcess,
                 simbol = processService.getRandonSimbol(memory?.slots ?: listOf())
             )
+            processessCreated++
             memory?.slots = when (algorithmType) {
                 AlgorithmType.FIRST_FIT -> processService.runFirstFit(process, memory?.slots ?: listOf())
                 AlgorithmType.CIRCULAR_FIT -> processService.runCircularFit(process, memory?.slots ?: listOf())
