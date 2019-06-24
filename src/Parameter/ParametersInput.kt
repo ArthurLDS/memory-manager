@@ -35,7 +35,7 @@ class ParametersInput(
     private fun getLabelAlgorithmType(): String {
         var label = "Tipos de algoritmo de escalonamento: "
         AlgorithmType.values().forEach { label += "\n${it.position}.${it.value}" }
-        label+= "\nDigite o núemero do algoritmo: "
+        label += "\nDigite o núemero do algoritmo: "
         return label
     }
 }

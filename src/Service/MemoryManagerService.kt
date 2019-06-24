@@ -1,8 +1,9 @@
 package Service
 
-import Memory.*
+import Memory.Memory
+import Memory.Process
+import Memory.Slot
 import Parameter.AlgorithmType
-import java.util.*
 
 class MemoryManagerService(
     val algorithmType: AlgorithmType? = null,
@@ -12,11 +13,11 @@ class MemoryManagerService(
 ) {
 
     var memory: Memory? = null
-    var processessCreated: Int = 0
     var cicles: Int = 0
     var memoryFreeAreas = mutableListOf<Int>()
-
-    private val scanner = Scanner(System.`in`)
+    private var processessCreated: Int = 0
+    private var totalExecution = 0
+    private val processService = ProcessService()
 
     init {
         var slots: List<Slot> = createSlots(memorySize)
@@ -26,16 +27,20 @@ class MemoryManagerService(
     }
 
     private fun runProcessing() {
-        var isFinished: Boolean?
         do {
             Thread.sleep((totalSeconds * 1000).toLong())
             manageProcesses()
-            isFinished = this.memory?.slots?.any { (it.process?.cicles ?: 0 > it.process?.currentCicles ?: 0) }
             printMemory()
-        } while (isFinished != null && isFinished)
+        } while (isNotFinishedSimulation())
         manageProcesses()
         printMemory()
         printStats()
+    }
+
+    private fun isNotFinishedSimulation() : Boolean {
+        return (this.memory?.slots
+            ?.map { it.process }
+            ?.any { it?.pid != null && it!!.pid > 0} ?: false)
     }
 
     private fun manageProcesses() {
@@ -62,19 +67,21 @@ class MemoryManagerService(
     }
 
     private fun createProcesses() {
+        val timeProcess = processService.getRandonTimeExecution()
+        this.totalExecution += timeProcess
         if (processessCreated < numberProccess) {
             processessCreated++
             val process = Process(
                 pid = processessCreated + 1,
-                size = ProcessService.getRandonProcessSize(),
-                cicles = ProcessService.getRandonTimeExecution(),
-                simbol = ProcessService.getRandonSimbol(memory?.slots ?: listOf())
+                size = processService.getRandonProcessSize(),
+                cicles = timeProcess,
+                simbol = processService.getRandonSimbol(memory?.slots ?: listOf())
             )
             memory?.slots = when (algorithmType) {
-                AlgorithmType.FIRST_FIT -> ProcessService.runFirstFit(process, memory?.slots ?: listOf())
-                AlgorithmType.CIRCULAR_FIT -> ProcessService.runCircularFit(process, memory?.slots ?: listOf())
-                AlgorithmType.BEST_FIT -> ProcessService.runBestFit(process, memory?.slots ?: listOf())
-                AlgorithmType.WORST_FIT -> ProcessService.runWorstFit(process, memory?.slots ?: listOf())
+                AlgorithmType.FIRST_FIT -> processService.runFirstFit(process, memory?.slots ?: listOf())
+                AlgorithmType.CIRCULAR_FIT -> processService.runCircularFit(process, memory?.slots ?: listOf())
+                AlgorithmType.BEST_FIT -> processService.runBestFit(process, memory?.slots ?: listOf())
+                AlgorithmType.WORST_FIT -> processService.runWorstFit(process, memory?.slots ?: listOf())
                 else -> listOf()
             }
         }
@@ -102,7 +109,7 @@ class MemoryManagerService(
     }
 
     private fun calculateBusyMemory(): Float {
-        return ((this.memoryFreeAreas.sumBy { memorySize - it } / this.memoryFreeAreas.size).toFloat() * 100 ) / memorySize
+        return ((this.memoryFreeAreas.sumBy { memorySize - it } / this.memoryFreeAreas.size).toFloat() * 100) / memorySize
     }
 
     private fun calculateTimeQueueProcessing(): Int {

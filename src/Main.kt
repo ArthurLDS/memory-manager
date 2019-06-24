@@ -1,6 +1,5 @@
 import Parameter.ParametersInput
 import Service.MemoryManagerService
-import java.util.*
 
 fun main(args: Array<String>) {
 
@@ -11,5 +10,5 @@ fun main(args: Array<String>) {
     parameters.readNumberProccess()
     parameters.readTotalSeconds()
 
-    val memoryManager = MemoryManagerService(parameters.algorithmType, parameters.numberProccess, parameters.totalSeconds, 5000)
+    MemoryManagerService(parameters.algorithmType, parameters.numberProccess, parameters.totalSeconds, 5000)
 }
